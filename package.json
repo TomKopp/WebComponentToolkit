@@ -21,8 +21,8 @@
   "browser": "dist/index.iife.js",
   "types": "dist/types/index.d.ts",
   "scripts": {
-    "build": "cross-env NODE_ENV=development rollup -c",
-    "build:prod": "cross-env NODE_ENV=production rollup -c"
+    "build": "cross-env NODE_ENV=production rollup -c",
+    "build:dev": "cross-env NODE_ENV=development rollup -c"
   },
   "browserslist": "> 0.5% and last 2 chrome version, last 2 firefox version and not IE <= 11",
   "dependencies": {},
