@@ -29,3 +29,12 @@ export const debounce = (func, wait, immediate = false) => {
 		}
 	};
 };
+
+
+
+export const defaultPropertyDeclaration = {
+	observe: true
+	, reflect: false
+	, prop2attr: identity
+	, attr2prop: identity
+};

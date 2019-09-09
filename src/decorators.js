@@ -8,6 +8,7 @@ export function defineElement(name, options) {
 }
 
 export function property(propertyDeclaration) {
+	// TC39 descriptor. see https://github.com/tc39/proposal-decorators/blob/master/NEXTBUILTINS.md
 	return function (propertyDescriptor) {
 
 		// If the decorator is invoked on an field property it generates accessors with that name
@@ -35,9 +36,9 @@ export function property(propertyDeclaration) {
 			propertyDescriptor.descriptor = {
 				get() { return this[propertyKey]; }
 				, set(val) {
-					if (this[propertyKey] === val) { return; }
+					const oldVal = this[propertyKey];
 					this[propertyKey] = val;
-					this.requestUpdate();
+					this.requestUpdate(propertyDescriptor.key, oldVal, val);
 				}
 				, configurable: true
 				, enumerable: true
