@@ -1,13 +1,19 @@
 module.exports = {
-	"extends": "eslint:recommended",
+	"extends": [
+		"eslint:recommended",
+		"plugin:jsdoc/recommended"
+	],
 	"parser": "babel-eslint",
 	"parserOptions": {
 		"sourceType": "module"
 	},
 	"env": {
-	"browser": true,
-	"es6": true
+		"browser": true,
+		"es6": true
 	},
+	"plugins": [
+		"jsdoc"
+	],
 	"rules": {
 		"accessor-pairs": "error",
 		"array-bracket-newline": "error",
@@ -317,5 +323,15 @@ module.exports = {
 			"error",
 			"never"
 		]
+	},
+	"settings": {
+		"jsdoc": {
+			"tagNamePreference": {
+				"augments": {
+					"message": "@extends is to be used over @augments as it is more evocative of classes than @augments",
+					"replacement": "extends"
+				}
+			}
+		}
 	}
 };

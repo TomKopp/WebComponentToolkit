@@ -1,3 +1,14 @@
+/**
+ * @module decorators
+ */
+/**
+ * Class decorator to define a custom element
+ *
+ * @exports
+ * @param {*} name tag name of the custom element
+ * @param {*} options options parameter that is passed to the define function
+ * @returns {Function} the actual decorator
+ */
 export function defineElement(name, options) {
 	return function (classDescriptor) {
 		classDescriptor.finisher = function finisher(classConstructor) {
@@ -7,6 +18,13 @@ export function defineElement(name, options) {
 	};
 }
 
+/**
+ * Property decorator that augments the property with accessors and asignes some lifecycle options
+ *
+ * @exports
+ * @param {module:utility.PropertyDeclaration} propertyDeclaration lifecycle options
+ * @returns {Function} the actual decorator
+ */
 export function property(propertyDeclaration) {
 	// TC39 descriptor. see https://github.com/tc39/proposal-decorators/blob/master/NEXTBUILTINS.md
 	return function (propertyDescriptor) {

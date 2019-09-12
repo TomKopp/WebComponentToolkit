@@ -1,10 +1,20 @@
 import { defaultPropertyDeclaration, identity } from '../../utility';
 
+/**
+ * @module BaseElement
+ */
 
 
 //* Class *********************************************************************
+/**
+ * Base class for web components
+ *
+ * @exports
+ * @class BaseElement
+ * @extends {HTMLElement}
+ */
 export class BaseElement extends HTMLElement {
-	//* Constructor *************************************************************
+	//* Constructor ***********************************************************
 	constructor() {
 		// If you define a constructor, always call super() first to apply the right property chain!
 		// This is specific to custom elements and required by the spec.
@@ -20,7 +30,7 @@ export class BaseElement extends HTMLElement {
 
 
 
-	//* Properties/Getter/Setter ************************************************
+	//* Properties/Getter/Setter **********************************************
 	/**
 	 * Protected map of properties of the class with special flags.
 	 *
@@ -37,10 +47,18 @@ export class BaseElement extends HTMLElement {
 	 * Protected property that holds a reference where to render the DOM to.
 	 *
 	 * @protected
+	 * @type {(HTMLElement | ShadowRoot)}
 	 * @memberof BaseElement
 	 */
 	_renderRoot;
 
+	/**
+	 * Flag to indicate a scheduled requestAnimationFrame
+	 *
+	 * @protected
+	 * @type {boolean}
+	 * @memberof BaseElement
+	 */
 	_rAFScheduled = false;
 
 	_template;
@@ -62,7 +80,7 @@ export class BaseElement extends HTMLElement {
 	 * Override to set a template
 	 *
 	 * @example return '<div><slot name=test></slot></div>';
-	 * @returns
+	 * @returns {string} the template string
 	 * @memberof BaseElement
 	 */
 	renderTemplate() { return ''; }
@@ -71,7 +89,7 @@ export class BaseElement extends HTMLElement {
 	 * Override to set the style element
 	 *
 	 * @example return 'div {background-color: blue;}'
-	 * @returns
+	 * @returns {string} css ruleset
 	 * @memberof BaseElement
 	 */
 	renderStyle() { return ''; }
@@ -79,10 +97,9 @@ export class BaseElement extends HTMLElement {
 	/**
 	 * Requests an update of the component. Checks if the value changed.
 	 *
-	 * @param {string} propertyKey
-	 * @param {*} oldValue
-	 * @param {*} newValue
-	 * @returns
+	 * @param {string} propertyKey property name
+	 * @param {*} oldValue old value of the property
+	 * @param {*} newValue new value of the property
 	 * @memberof BaseElement
 	 */
 	requestUpdate(propertyKey, oldValue, newValue) {
@@ -122,13 +139,14 @@ export class BaseElement extends HTMLElement {
 
 
 
-	//* Obervers/Handlers *******************************************************
+	//* Obervers/Handlers *****************************************************
 	/**
 	 * Specify observed attributes names to be notified in attributeChangedCallback
 	 *
 	 * @readonly
 	 * @static
 	 * @memberof BaseElement
+	 * @returns {string[]} array of property names that will be observed as attributes
 	 */
 	static get observedAttributes() {
 		const ret = [];
@@ -143,10 +161,9 @@ export class BaseElement extends HTMLElement {
 	 * Also called for initial values when an element is created by the parser, or upgraded.
 	 * Note: only attributes listed in the observedAttributes property will receive this callback.
 	 *
-	 * @param {string} attrName
-	 * @param {string | null} oldValue
-	 * @param {string | null} newValue
-	 * @returns
+	 * @param {string} attrName attribute name
+	 * @param {(string | null)} oldValue old value of the attribute
+	 * @param {(string | null)} newValue new value of the attribute
 	 * @memberof BaseElement
 	 */
 	attributeChangedCallback(attrName, oldValue, newValue) {
@@ -157,7 +174,7 @@ export class BaseElement extends HTMLElement {
 
 
 
-	//* Life Cycle Callbacks ****************************************************
+	//* Life Cycle Callbacks **************************************************
 	/**
 	 * Invoked each time the custom element is appended into a document-connected
 	 * element. This will happen each time the node is moved, and may happen before
@@ -166,7 +183,6 @@ export class BaseElement extends HTMLElement {
 	 * Useful for running setup code, such as fetching resources or rendering.
 	 * Generally, you should try to delay work until this time.
 	 *
-	 * @returns
 	 * @memberof BaseElement
 	 */
 	connectedCallback() {
