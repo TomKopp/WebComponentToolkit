@@ -1,4 +1,4 @@
-import { defaultPropertyDeclaration, identity } from '../../utility';
+import { defaultPropertyDeclaration, identity, isDifferent } from '../../utility';
 
 /**
  * @module BaseElement
@@ -32,10 +32,48 @@ export class BaseElement extends HTMLElement {
 
 	//* Properties/Getter/Setter **********************************************
 	/**
+	 * Specify observed attributes names to be notified in attributeChangedCallback
+	 *
+	 * @readonly
+	 * @protected
+	 * @static
+	 * @returns {string[]} array of property names that will be observed as attributes
+	 * @memberof BaseElement
+	 */
+	static get observedAttributes() {
+		const ret = [];
+		this._classProperties.forEach((propertyDeclaration, propertyKey) => {
+			if (propertyDeclaration.observe && typeof propertyKey === 'string') { ret.push(propertyKey); }
+		});
+		return ret;
+	}
+
+	// static get templateProperties() {
+	// 	const ret = [];
+	// 	this._classProperties.forEach((propertyDeclaration, propertyKey) => {
+	// 		if ((propertyDeclaration.observe || propertyDeclaration.templateProp)
+	// 			&& typeof propertyKey === 'string'
+	// 		) { ret.push(propertyKey); }
+	// 	});
+	// 	return ret;
+	// }
+
+	// static get styleProperties() {
+	// 	const ret = [];
+	// 	this._classProperties.forEach((propertyDeclaration, propertyKey) => {
+	// 		if ((propertyDeclaration.observe || propertyDeclaration.styleProp)
+	// 			&& typeof propertyKey === 'string'
+	// 		) { ret.push(propertyKey); }
+	// 	});
+	// 	return ret;
+	// }
+
+	/**
 	 * Protected map of properties of the class with special flags.
 	 *
 	 * @protected
 	 * @static
+	 * @type {Map.<(string|number|symbol), module:utility.PropertyDeclaration>}
 	 * @memberof BaseElement
 	 */
 	static _classProperties = new Map();
@@ -61,13 +99,43 @@ export class BaseElement extends HTMLElement {
 	 */
 	_rAFScheduled = false;
 
+	/**
+	 * Template element
+	 *
+	 * @protected
+	 * @type {HTMLTemplateElement | undefined}
+	 * @memberof BaseElement
+	 */
 	_template;
+
+	/**
+	 * Get the internal template
+	 *
+	 * @readonly
+	 * @returns {HTMLTemplateElement} template
+	 * @memberof BaseElement
+	 */
 	get template() {
 		if (!this._template) { this._template = document.createElement('template'); }
 		return this._template;
 	}
 
+	/**
+	 * Style element
+	 *
+	 * @protected
+	 * @type {HTMLStyleElement | undefined}
+	 * @memberof BaseElement
+	 */
 	_styleElement;
+
+	/**
+	 * get the internal style
+	 *
+	 * @readonly
+	 * @returns {HTMLStyleElement} style
+	 * @memberof BaseElement
+	 */
 	get styleElement() {
 		if (!this._styleElement) { this._styleElement = document.createElement('style'); }
 		return this._styleElement;
@@ -79,83 +147,45 @@ export class BaseElement extends HTMLElement {
 	/**
 	 * Override to set a template
 	 *
+	 * @abstract
 	 * @example return '<div><slot name=test></slot></div>';
 	 * @returns {string} the template string
 	 * @memberof BaseElement
 	 */
-	renderTemplate() { return ''; }
+	updateTemplate() { throw new Error('must be implemented by subclass!'); }
 
 	/**
 	 * Override to set the style element
 	 *
+	 * @abstract
 	 * @example return 'div {background-color: blue;}'
 	 * @returns {string} css ruleset
 	 * @memberof BaseElement
 	 */
-	renderStyle() { return ''; }
-
-	/**
-	 * Requests an update of the component. Checks if the value changed.
-	 *
-	 * @param {string} propertyKey property name
-	 * @param {*} oldValue old value of the property
-	 * @param {*} newValue new value of the property
-	 * @memberof BaseElement
-	 */
-	requestUpdate(propertyKey, oldValue, newValue) {
-		if (Object.is(oldValue, newValue)) { return; }
-		this.render();
-	}
+	updateStyle() { throw new Error('must be implemented by subclass!'); }
 
 	/**
 	 * Sets or removes attributes of the component, based on the 'reflect' flag of the property.
 	 *
+	 * @protected
 	 * @memberof BaseElement
 	 */
-	renderAttributes() {
-		this.constructor._classProperties.forEach((propertyDeclaration, propertyKey) => {
+	reflectAttributes() {
+		const reflector = (propertyDeclaration, propertyKey) => {
 			if (!propertyDeclaration.reflect || typeof propertyKey !== 'string') { return; }
 
 			const { prop2attr = identity } = propertyDeclaration;
 			const prop = this[propertyKey];
-			if (prop) { this.setAttribute(propertyKey, prop2attr.call(this, prop)); }
-			else { this.removeAttribute(propertyKey); }
-		});
-	}
+			if (prop === null) { this.removeAttribute(propertyKey); }
+			else { this.setAttribute(propertyKey, prop2attr.call(this, prop)); }
+		};
 
-	render() {
-		this.styleElement.innerHTML = this.renderStyle();
-		this.template.innerHTML = this.renderTemplate();
-		this.preCommitHook();
-
-		if (!this._rAFScheduled) {
-			this._rAFScheduled = true;
-			requestAnimationFrame(() => {
-				this.commit();
-				this._rAFScheduled = false;
-			});
-		}
+		this.constructor._classProperties.forEach(reflector);
 	}
 
 
 
 	//* Obervers/Handlers *****************************************************
-	/**
-	 * Specify observed attributes names to be notified in attributeChangedCallback
-	 *
-	 * @readonly
-	 * @static
-	 * @memberof BaseElement
-	 * @returns {string[]} array of property names that will be observed as attributes
-	 */
-	static get observedAttributes() {
-		const ret = [];
-		this._classProperties.forEach((propertyDeclaration, propertyKey) => {
-			if (propertyDeclaration.observe && typeof propertyKey === 'string') { ret.push(propertyKey); }
-		});
-		return ret;
-	}
-
 	/**
 	 * Called when an observed attribute has been added, removed, updated, or replaced.
 	 * Also called for initial values when an element is created by the parser, or upgraded.
@@ -213,25 +243,67 @@ export class BaseElement extends HTMLElement {
 	// formResetCallback() {}
 
 	/**
+	 * Requests an update of the component. Checks if the value changed.
+	 *
+	 * @param {string} propertyKey property name
+	 * @param {*} oldValue old value of the property
+	 * @param {*} newValue new value of the property
+	 * @memberof BaseElement
+	 */
+	requestUpdate(propertyKey, oldValue, newValue) {
+		const {
+			modified = isDifferent
+			// , templateProp = false
+			// , styleProp = false
+			, reflect = false
+		} = this.constructor._classProperties.get(propertyKey) || defaultPropertyDeclaration;
+
+		if (modified.call(this, oldValue, newValue)) {
+			this.styleElement.innerHTML = this.updateStyle();
+			this.template.innerHTML = this.updateTemplate();
+
+			// ! set template and style render flags correctly
+			this.requestRender(true, true, reflect);
+		}
+	}
+
+	requestRender(dirtyTemplate, dirtyStyle, dirtyAttribute) {
+		this.preRenderHook(dirtyTemplate, dirtyStyle, dirtyAttribute);
+
+		if (!this._rAFScheduled) {
+			this._rAFScheduled = true;
+			requestAnimationFrame(() => {
+				this.render(dirtyTemplate, dirtyStyle, dirtyAttribute);
+				this._rAFScheduled = false;
+			});
+		}
+	}
+
+	/**
 	 * Invoked each time the custom element will becommitted to the DOM.
 	 *
+	 * @override
 	 * @memberof BaseElement
 	 */
 	// eslint-disable-next-line
-	preCommitHook() { }
+	preRenderHook() { }
 
 	/**
 	 * Invoked each time the custom element is committed to the DOM
 	 *
+	 * @protected
+	 * @param {boolean} dirtyTemplate Flag indicating template rerender
+	 * @param {boolean} dirtyStyle Flag indicating style rerender
+	 * @param {boolean} dirtyAttribute Flag indicating attribute update
 	 * @memberof BaseElement
 	 */
-	commit() {
-		this._renderRoot.appendChild(this.styleElement);
+	render(dirtyTemplate, dirtyStyle, dirtyAttribute) {
+		if (dirtyStyle) { this._renderRoot.appendChild(this.styleElement); }
 
 		// Does not clone the DocumentFragment, instead rips it from the template and
 		// places it into the render node. This way the element will retain the references
 		// of objects within the template.
-		this._renderRoot.appendChild(this.template.content);
-		this.renderAttributes();
+		if (dirtyTemplate) { this._renderRoot.appendChild(this.template.content); }
+		if (dirtyAttribute) { this.reflectAttributes(); }
 	}
 }
