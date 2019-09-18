@@ -217,7 +217,7 @@ export class BaseElement extends HTMLElement {
 	 */
 	connectedCallback() {
 		if (!this.isConnected) { return; }
-		this.render();
+		this.render(true, true, true);
 	}
 
 	/**
@@ -268,7 +268,7 @@ export class BaseElement extends HTMLElement {
 	}
 
 	requestRender(dirtyTemplate, dirtyStyle, dirtyAttribute) {
-		this.preRenderHook(dirtyTemplate, dirtyStyle, dirtyAttribute);
+		this.preRenderHook();
 
 		if (!this._rAFScheduled) {
 			this._rAFScheduled = true;
