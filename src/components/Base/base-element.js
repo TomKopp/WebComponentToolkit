@@ -42,7 +42,7 @@ export class BaseElement extends HTMLElement {
 	 */
 	static get observedAttributes() {
 		const ret = [];
-		this._classProperties.forEach((propertyDeclaration, propertyKey) => {
+		this.classProperties.forEach((propertyDeclaration, propertyKey) => {
 			if (propertyDeclaration.observe && typeof propertyKey === 'string') { ret.push(propertyKey); }
 		});
 		return ret;
@@ -50,7 +50,7 @@ export class BaseElement extends HTMLElement {
 
 	// static get templateProperties() {
 	// 	const ret = [];
-	// 	this._classProperties.forEach((propertyDeclaration, propertyKey) => {
+	// 	this.classProperties.forEach((propertyDeclaration, propertyKey) => {
 	// 		if ((propertyDeclaration.observe || propertyDeclaration.templateProp)
 	// 			&& typeof propertyKey === 'string'
 	// 		) { ret.push(propertyKey); }
@@ -60,7 +60,7 @@ export class BaseElement extends HTMLElement {
 
 	// static get styleProperties() {
 	// 	const ret = [];
-	// 	this._classProperties.forEach((propertyDeclaration, propertyKey) => {
+	// 	this.classProperties.forEach((propertyDeclaration, propertyKey) => {
 	// 		if ((propertyDeclaration.observe || propertyDeclaration.styleProp)
 	// 			&& typeof propertyKey === 'string'
 	// 		) { ret.push(propertyKey); }
@@ -71,14 +71,20 @@ export class BaseElement extends HTMLElement {
 	/**
 	 * Protected map of properties of the class with special flags.
 	 *
-	 * @protected
+	 * @readonly
 	 * @static
-	 * @type {Map.<(string|number|symbol), module:utility.PropertyDeclaration>}
+	 * @returns {Map.<(string|number|symbol), module:utility.PropertyDeclaration>} property key - property decaration map
 	 * @memberof BaseElement
 	 */
-	static _classProperties = new Map();
+	static get classProperties() {
+		if (!Object.prototype.hasOwnProperty.call(this, '_classProperties')) {
+			Object.defineProperty(this, '_classProperties', { enumerable: true, value: new Map() });
+		}
+
+		return this.classProperties;
+	}
 	static addClassProperty(propertyKey, propertyDeclaration) {
-		this._classProperties.set(propertyKey, Object.assign({}, defaultPropertyDeclaration, propertyDeclaration));
+		this.classProperties.set(propertyKey, Object.assign({}, defaultPropertyDeclaration, propertyDeclaration));
 	}
 
 	/**
@@ -180,7 +186,7 @@ export class BaseElement extends HTMLElement {
 			else { this.setAttribute(propertyKey, prop2attr.call(this, prop)); }
 		};
 
-		this.constructor._classProperties.forEach(reflector);
+		this.constructor.classProperties.forEach(reflector);
 	}
 
 
@@ -198,7 +204,7 @@ export class BaseElement extends HTMLElement {
 	 */
 	attributeChangedCallback(attrName, oldValue, newValue) {
 		if (oldValue === newValue) { return; }
-		const { attr2prop = identity } = this.constructor._classProperties.get(attrName) || defaultPropertyDeclaration;
+		const { attr2prop = identity } = this.constructor.classProperties.get(attrName) || defaultPropertyDeclaration;
 		this[attrName] = attr2prop.call(this, newValue);
 	}
 
@@ -256,7 +262,7 @@ export class BaseElement extends HTMLElement {
 			// , templateProp = false
 			// , styleProp = false
 			, reflect = false
-		} = this.constructor._classProperties.get(propertyKey) || defaultPropertyDeclaration;
+		} = this.constructor.classProperties.get(propertyKey) || defaultPropertyDeclaration;
 
 		if (modified.call(this, oldValue, newValue)) {
 			this.styleElement.innerHTML = this.updateStyle();
