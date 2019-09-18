@@ -181,9 +181,10 @@ export class BaseElement extends HTMLElement {
 			if (!propertyDeclaration.reflect && typeof propertyKey !== 'string') { return; }
 
 			const { prop2attr = identity } = propertyDeclaration;
-			const prop = this[propertyKey];
+			const prop = prop2attr.call(this, this[propertyKey]);
+
 			if (prop === null) { this.removeAttribute(propertyKey); }
-			else { this.setAttribute(propertyKey, prop2attr.call(this, prop)); }
+			else { this.setAttribute(propertyKey, prop); }
 		};
 
 		this.constructor.classProperties.forEach(reflector);
