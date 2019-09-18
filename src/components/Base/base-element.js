@@ -172,7 +172,7 @@ export class BaseElement extends HTMLElement {
 	 */
 	reflectAttributes() {
 		const reflector = (propertyDeclaration, propertyKey) => {
-			if (!propertyDeclaration.reflect || typeof propertyKey !== 'string') { return; }
+			if (!propertyDeclaration.reflect && typeof propertyKey !== 'string') { return; }
 
 			const { prop2attr = identity } = propertyDeclaration;
 			const prop = this[propertyKey];
