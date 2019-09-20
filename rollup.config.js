@@ -7,6 +7,7 @@ import json from 'rollup-plugin-json';
 import pkg from './package.json';
 import progress from 'rollup-plugin-progress';
 import resolve from 'rollup-plugin-node-resolve';
+import { terser } from 'rollup-plugin-terser';
 
 const extensions = [
 	'.js'
@@ -40,10 +41,13 @@ export default {
 		, cleanup({ extensions: extensions.map(v => v.slice(1)) })
 
 		// Compile TypeScript/JavaScript files
-		, babel({ extensions, include: ['src/**/*'], exclude: 'node_modules/**' })
+		, babel({ extensions })
 
 		// Allow bundling cjs modules. Rollup doesn't understand cjs
 		, commonjs()
+
+		// Minify generated es bundle. Uses terser under the hood.
+		, (() => { if (process.env.NODE_ENV === 'production') return terser(); })()
 
 		// Rollup plugin to easily copy files and folders
 		, cpy({ files: ['dist/index.esm.js', 'dist/index.esm.js.map'], dest: 'public/' })
