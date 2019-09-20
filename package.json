@@ -36,7 +36,7 @@
     "babel-eslint": "^10.0.3",
     "babel-minify": "^0.5.1",
     "babel-preset-minify": "^0.5.1",
-    "cross-env": "^5.2.1",
+    "cross-env": "^6.0.0",
     "eslint": "^6.4.0",
     "eslint-plugin-jsdoc": "^15.9.2",
     "rollup": "^1.21.4",

@@ -11,8 +11,6 @@ import resolve from 'rollup-plugin-node-resolve';
 const extensions = [
 	'.js'
 	, '.jsx'
-	, '.ts'
-	, '.tsx'
 ];
 
 const name = String(pkg.name).replace(/-/g, '');
@@ -38,14 +36,14 @@ export default {
 		// Convert JSON files to ES Modules
 		, json({ include: './package.json', preferConst: true, compact: true })
 
+		// Remove comments, trim trailing spaces, compact empty lines, and normalize line endings
+		, cleanup({ extensions: extensions.map(v => v.slice(1)) })
+
 		// Compile TypeScript/JavaScript files
 		, babel({ extensions, include: ['src/**/*'], exclude: 'node_modules/**' })
 
 		// Allow bundling cjs modules. Rollup doesn't understand cjs
 		, commonjs()
-
-		// Remove comments, trim trailing spaces, compact empty lines, and normalize line endings
-		, cleanup({ extensions: ['ts', 'js'] })
 
 		// Rollup plugin to easily copy files and folders
 		, cpy({ files: ['dist/index.esm.js', 'dist/index.esm.js.map'], dest: 'public/' })
