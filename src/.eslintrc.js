@@ -5,7 +5,10 @@ module.exports = {
 	],
 	"parser": "babel-eslint",
 	"parserOptions": {
-		"sourceType": "module"
+		"sourceType": "module",
+		"ecmaFeatures": {
+			"legacyDecorators": true
+		}
 	},
 	"env": {
 		"browser": true,
