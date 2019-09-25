@@ -1,4 +1,4 @@
-import { defaultPropertyDeclaration, identity, isDifferent } from '../../utility';
+import { defaultPropertyDeclaration, identity, isDifferent, rAFthrottle } from '../../utility';
 
 /**
  * @module BaseElement
@@ -100,10 +100,10 @@ export class BaseElement extends HTMLElement {
 	 * Flag to indicate a scheduled requestAnimationFrame
 	 *
 	 * @protected
-	 * @type {boolean}
+	 * @type {Function}
 	 * @memberof BaseElement
 	 */
-	_rAFScheduled = false;
+	_rAFScheduled = rAFthrottle(this.render.bind(this));
 
 	/**
 	 * Template element
@@ -276,14 +276,7 @@ export class BaseElement extends HTMLElement {
 
 	requestRender(dirtyTemplate, dirtyStyle, dirtyAttribute) {
 		this.preRenderHook();
-
-		if (!this._rAFScheduled) {
-			this._rAFScheduled = true;
-			requestAnimationFrame(() => {
-				this.render(dirtyTemplate, dirtyStyle, dirtyAttribute);
-				this._rAFScheduled = false;
-			});
-		}
+		this._rAFScheduled(dirtyTemplate, dirtyStyle, dirtyAttribute);
 	}
 
 	/**
