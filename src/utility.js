@@ -42,18 +42,14 @@ export function bool2attr(val) { return val ? '' : null; }
 export function isDifferent(oldValue, newValue) { return !Object.is(oldValue, newValue); }
 
 export const debounce = (func, wait, immediate = false) => {
-	if (typeof func !== 'function') {
-		throw new TypeError('Expected a function');
-	}
+	if (typeof func !== 'function') { throw new TypeError('Expected a function'); }
 
 	let timeout;
 
 	return function debounced(...args) {
 		const later = () => {
 			timeout = null;
-			if (!immediate) {
-				func.apply(this, args);
-			}
+			if (!immediate) { func.apply(this, args); }
 		};
 
 		const callNow = immediate && !timeout;
@@ -61,13 +57,43 @@ export const debounce = (func, wait, immediate = false) => {
 		clearTimeout(timeout);
 		timeout = setTimeout(later, wait);
 
-		if (callNow) {
-			func.apply(this, args);
-		}
+		if (callNow) { func.apply(this, args); }
 	};
 };
 
+export const throttle = (func, wait, immediate = false) => {
+	if (typeof func !== 'function') { throw new TypeError('Expected a function'); }
 
+	let timeout;
+
+	return function throttled(...args) {
+		const later = () => {
+			timeout = null;
+			if (!immediate) { func.apply(this, args); }
+		};
+		const callNow = immediate && !timeout;
+
+		if (!timeout) { timeout = setTimeout(later, wait); }
+		if (callNow) { func.apply(this, args); }
+	};
+};
+
+export const rAFthrottle = (func, immediate = false) => {
+	if (typeof func !== 'function') { throw new TypeError('Expected a function'); }
+
+	let rAFid;
+
+	return function throttled(...args) {
+		const later = () => {
+			rAFid = null;
+			if (!immediate) { func.apply(this, args); }
+		};
+		const callNow = immediate && !rAFid;
+
+		if (!rAFid) { rAFid = requestAnimationFrame(later); }
+		if (callNow) { func.apply(this, args); }
+	};
+};
 
 /**
  * PropertyDeclaration
