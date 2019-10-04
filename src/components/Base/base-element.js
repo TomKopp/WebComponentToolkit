@@ -81,7 +81,7 @@ export class BaseElement extends HTMLElement {
 			Object.defineProperty(this, '_classProperties', { enumerable: true, value: new Map() });
 		}
 
-		return this.classProperties;
+		return this._classProperties;
 	}
 	static addClassProperty(propertyKey, propertyDeclaration) {
 		this.classProperties.set(propertyKey, Object.assign({}, defaultPropertyDeclaration, propertyDeclaration));
@@ -178,7 +178,7 @@ export class BaseElement extends HTMLElement {
 	 */
 	reflectAttributes() {
 		const reflector = (propertyDeclaration, propertyKey) => {
-			if (!propertyDeclaration.reflect && typeof propertyKey !== 'string') { return; }
+			if (!propertyDeclaration.reflect || typeof propertyKey !== 'string') { return; }
 
 			const { prop2attr = identity } = propertyDeclaration;
 			const prop = prop2attr.call(this, this[propertyKey]);
@@ -224,7 +224,11 @@ export class BaseElement extends HTMLElement {
 	 */
 	connectedCallback() {
 		if (!this.isConnected) { return; }
-		this.render(true, true, true);
+
+		// First render
+		this.styleElement.innerHTML = this.updateStyle();
+		this.template.innerHTML = this.updateTemplate();
+		this.requestRender(true, true, true);
 	}
 
 	/**
