@@ -6,7 +6,7 @@
  *
  * @exports
  * @param {*} name tag name of the custom element
- * @param {*} options options parameter that is passed to the define function
+ * @param {*} [options] options parameter that is passed to the define function
  * @returns {Function} the actual decorator
  */
 export function defineElement(name, options) {
