@@ -1,4 +1,4 @@
-import { defaultPropertyDeclaration, identity, isDifferent, rAFthrottle } from '../../utility';
+import { defaultPropertyDeclaration, identity, isDifferent, noop, rAFthrottle } from '../../utility';
 
 /**
  * @module BaseElement
@@ -228,7 +228,7 @@ export class BaseElement extends HTMLElement {
 		// First render
 		this.styleElement.innerHTML = this.updateStyle();
 		this.template.innerHTML = this.updateTemplate();
-		this.requestRender(true, true, true);
+		this.requestRender();
 	}
 
 	/**
@@ -266,21 +266,22 @@ export class BaseElement extends HTMLElement {
 			modified = isDifferent
 			// , templateProp = false
 			// , styleProp = false
-			, reflect = false
+			// , reflect = false
+			, onChange = noop
 		} = this.constructor.classProperties.get(propertyKey) || defaultPropertyDeclaration;
 
 		if (modified.call(this, oldValue, newValue)) {
+			onChange.call(this);
 			this.styleElement.innerHTML = this.updateStyle();
 			this.template.innerHTML = this.updateTemplate();
 
-			// ! set template and style render flags correctly
-			this.requestRender(true, true, reflect);
+			this.requestRender();
 		}
 	}
 
-	requestRender(dirtyTemplate, dirtyStyle, dirtyAttribute) {
-		this.preRenderHook();
-		this._rAFScheduled(dirtyTemplate, dirtyStyle, dirtyAttribute);
+	requestRender() {
+		this.preRender();
+		this._rAFScheduled();
 	}
 
 	/**
@@ -290,24 +291,25 @@ export class BaseElement extends HTMLElement {
 	 * @memberof BaseElement
 	 */
 	// eslint-disable-next-line
-	preRenderHook() { }
+	preRender() { }
 
 	/**
 	 * Invoked each time the custom element is committed to the DOM
 	 *
 	 * @protected
-	 * @param {boolean} dirtyTemplate Flag indicating template rerender
-	 * @param {boolean} dirtyStyle Flag indicating style rerender
-	 * @param {boolean} dirtyAttribute Flag indicating attribute update
 	 * @memberof BaseElement
 	 */
-	render(dirtyTemplate, dirtyStyle, dirtyAttribute) {
-		if (dirtyStyle) { this._renderRoot.appendChild(this.styleElement); }
+	render() {
+		while (this._renderRoot.firstChild) {
+			this._renderRoot.removeChild(this._renderRoot.firstChild);
+		}
+
+		this._renderRoot.appendChild(this.styleElement);
 
 		// Does not clone the DocumentFragment, instead rips it from the template and
 		// places it into the render node. This way the element will retain the references
 		// of objects within the template.
-		if (dirtyTemplate) { this._renderRoot.appendChild(this.template.content); }
-		if (dirtyAttribute) { this.reflectAttributes(); }
+		this._renderRoot.appendChild(this.template.content);
+		this.reflectAttributes();
 	}
 }
