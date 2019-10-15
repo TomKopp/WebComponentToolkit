@@ -105,6 +105,7 @@ export const rAFthrottle = (func, immediate = false) => {
  * @property {Function} [prop2attr] Converts the property to an attribute
  * @property {Function} [attr2prop] Converts the attribute to a property
  * @property {Function} [modified] Tells if the value was modified
+ * @property {Function} [onChange] Invoked when modified is true
  */
 /**
  * @exports
@@ -114,6 +115,7 @@ export const rAFthrottle = (func, immediate = false) => {
  * @property {Function} [prop2attr=identity]
  * @property {Function} [attr2prop=identity]
  * @property {Function} [modified=isDifferent]
+ * @property {Function} [onChange=noop]
  */
 export const defaultPropertyDeclaration = {
 	observe: true
@@ -121,4 +123,5 @@ export const defaultPropertyDeclaration = {
 	, prop2attr: identity
 	, attr2prop: identity
 	, modified: isDifferent
+	, onChange: noop
 };
