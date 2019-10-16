@@ -3,10 +3,9 @@ import { BaseElement } from '../Base/base-element';
 
 @defineElement('wctk-accordion-tab')
 export class AccordionTab extends BaseElement {
-	ActivationEvent = new CustomEvent('AccordionTab', {
+	ActivationEvent = new Event('AccordionTab', {
 		bubbles: true
 		, composed: true
-		, detail: this
 	});
 
 	@property()
