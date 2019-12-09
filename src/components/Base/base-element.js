@@ -1,4 +1,5 @@
-import { defaultPropertyDeclaration, identity, isDifferent, noop, rAFthrottle } from '../../utility';
+import { defaultPropertyDeclaration, identity, isDifferent, noop } from '../../utility';
+import { rAFthrottle } from '@witzbould/utils';
 
 /**
  * @module BaseElement
